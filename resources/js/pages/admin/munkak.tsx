@@ -37,6 +37,7 @@ interface Munka {
 interface MunkakProps {
     munkak: Munka[];
     fuvarozok: Fuvarozo[];
+    currentFilter?: string | null;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -64,10 +65,11 @@ const statuszColors = {
     sikertelen: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
 
-export default function Munkak({ munkak, fuvarozok }: MunkakProps) {
+export default function Munkak({ munkak, fuvarozok, currentFilter }: MunkakProps) {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [editingMunka, setEditingMunka] = useState<Munka | null>(null);
     const [assigningMunka, setAssigningMunka] = useState<Munka | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string>(currentFilter || '');
 
     const createForm = useForm({
         kiindulasi_cim: '',
@@ -145,6 +147,20 @@ export default function Munkak({ munkak, fuvarozok }: MunkakProps) {
         });
     };
 
+    const handleStatusFilterChange = (value: string) => {
+        setStatusFilter(value);
+        const params = new URLSearchParams(window.location.search);
+        if (value && value !== 'all') {
+            params.set('statusz', value);
+        } else {
+            params.delete('statusz');
+        }
+        router.visit(`/admin/munkak?${params.toString()}`, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Munkák kezelése" />
@@ -156,10 +172,28 @@ export default function Munkak({ munkak, fuvarozok }: MunkakProps) {
                             Munkák létrehozása, módosítása és fuvarozókhoz rendelése
                         </p>
                     </div>
-                    <Button onClick={() => setShowCreateForm(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Új munka
-                    </Button>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Label htmlFor="status-filter">Szűrés státusz szerint:</Label>
+                            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+                                <SelectTrigger className="w-48">
+                                    <SelectValue placeholder="Összes munka" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Összes munka</SelectItem>
+                                    {statuszOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button onClick={() => setShowCreateForm(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Új munka
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Create Form */}

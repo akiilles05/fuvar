@@ -9,24 +9,34 @@ use App\Models\Fuvarozo;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Notifications\MunkaFailedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class Munkak extends Controller
 {
     /**
      * List all munkák.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         if (auth('fuvarozo')->user()->szerepkor !== 'admin') {
             abort(403, 'Unauthorized');
         }
 
-        $munkak = Munka::with('fuvarozo')->get();
+        $query = Munka::with('fuvarozo');
+
+        // Status-based filtering
+        if ($request->has('statusz') && !empty($request->statusz)) {
+            $query->where('statusz', $request->statusz);
+        }
+
+        $munkak = $query->get();
         $fuvarozok = Fuvarozo::where('szerepkor', 'fuvarozo')->get();
 
         return Inertia::render('admin/munkak', [
             'munkak' => $munkak,
             'fuvarozok' => $fuvarozok,
+            'currentFilter' => $request->statusz ?? null,
         ]);
     }
 
@@ -67,6 +77,7 @@ class Munkak extends Controller
         }
 
         $munka = Munka::findOrFail($id);
+        $oldStatus = $munka->statusz;
 
         $validated = $request->validate([
             'kiindulasi_cim' => ['sometimes', 'required', 'string', 'max:255'],
@@ -78,6 +89,12 @@ class Munkak extends Controller
         ]);
 
         $munka->update($validated);
+
+        // Send notification if status changed to 'sikertelen'
+        if (isset($validated['statusz']) && $validated['statusz'] === 'sikertelen' && $oldStatus !== 'sikertelen') {
+            $admins = Fuvarozo::where('szerepkor', 'admin')->get();
+            Notification::send($admins, new MunkaFailedNotification($munka));
+        }
 
         return response()->json(['data' => $munka]);
     }
