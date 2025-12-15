@@ -25,7 +25,7 @@ export default function Register() {
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
+                        <div className="grid gap-6 text-black">
                             <div className="grid gap-2">
                                 <Label htmlFor="nev">Név</Label>
                                 <Input
@@ -101,7 +101,7 @@ export default function Register() {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        <div className="text-center text-sm text-black">
                             Van már fiókja?{' '}
                             <TextLink href={login()} tabIndex={6}>
                                 Bejelentkezés

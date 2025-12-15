@@ -37,7 +37,7 @@ export default function Login({
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
+                        <div className="grid gap-6 text-black">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email cím</Label>
                                 <Input
@@ -49,6 +49,7 @@ export default function Login({
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="email@example.com"
+                                    className='text-black'
                                 />
                                 <InputError message={errors.email} />
                             </div>

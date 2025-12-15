@@ -10,7 +10,7 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
         "types": "tsc --noEmit",
-        "dev:php": "php artisan serve && npm run dev"
+        "dev:php": "php artisan serve & npm run dev"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
